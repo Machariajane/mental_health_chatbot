@@ -1,0 +1,6 @@
+.env
+.chainlit
+.files
+vectordb/
+llama-2-7b-chat.Q4_0.gguf
+data/
