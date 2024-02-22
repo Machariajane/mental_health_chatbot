@@ -1,13 +1,16 @@
-data directory contains your files (.pdf)
-specify model path
+create a data directory that contains your files (.pdf)
 
+Specify model path
 
 create a .env file and inside specify your 
+
 username = "windows username"
 password = "windows password"
 
 run python main.py
-on browser for swaggerui http://localhost:8090/docs
+
+On the  browser :
+for swaggerui http://localhost:8090/docs
 for redoc http://localhost:8090/redoc
 
 for postman
