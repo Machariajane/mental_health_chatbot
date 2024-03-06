@@ -88,12 +88,33 @@ class PDFChatBot:
         )
         return llm
 
+    # def conversational_chain(self):
+    #     db = FAISS.load_local(self.db_faiss_path, embeddings)
+    #     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    #     conversational_chain = ConversationalRetrievalChain.from_llm(llm=self.load_llm(),
+    #                                                                  retriever=db.as_retriever(search_kwargs={"k": 3}),
+    #                                                                  verbose=True, memory=memory)
+    #     return conversational_chain
+    def custom_prompt(self, question, documents):
+        # Combine the question with the context from documents
+        context = " ".join([doc['content'] for doc in documents])  # Assuming 'content' holds the text
+        prompt = f"Given the following information: {context}\nQuestion: {question}\nAnswer:"
+        return prompt
+    
     def conversational_chain(self):
         db = FAISS.load_local(self.db_faiss_path, embeddings)
         memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+
+        # Define a custom function to format the prompt
+        def custom_format_fn(data):
+            question = data["question"]
+            retrieved_docs = db.retrieve(question)  # Retrieve relevant documents based on the question
+            return self.custom_prompt(question, retrieved_docs)
+
         conversational_chain = ConversationalRetrievalChain.from_llm(llm=self.load_llm(),
                                                                      retriever=db.as_retriever(search_kwargs={"k": 3}),
-                                                                     verbose=True, memory=memory)
+                                                                     verbose=True, memory=memory,
+                                                                     format_fn=custom_format_fn)  # Pass the custom prompt function
         return conversational_chain
 
 
