@@ -95,9 +95,20 @@ class PDFChatBot:
     #                                                                  retriever=db.as_retriever(search_kwargs={"k": 3}),
     #                                                                  verbose=True, memory=memory)
     #     return conversational_chain
-    def custom_prompt(self, question, documents):
+    def custom_prompt(self, question, retrieved_idx):
         # Combine the question with the context from documents
-        context = " ".join([doc['content'] for doc in documents])  # Assuming 'content' holds the text
+        introduction = "You are a mental health chatbot designed to provide support and information."
+
+    # Special directive for sensitive topics
+        if "suicide" in question.lower():
+            introduction = f"{introduction}\n\nIt seems you are going through a very tough time. I strongly encourage you to talk to someone who can help. Please consider calling this number: +25472 for immediate support."
+            return introduction
+        
+        retrieved_docs = [documents_dict[idx] for idx in retrieved_idx]
+        # Extract content from documents
+        context = " ".join([doc['content'] for doc in retrieved_docs])
+
+        
         prompt = f"Given the following information: {context}\nQuestion: {question}\nAnswer:"
         return prompt
     
@@ -108,8 +119,8 @@ class PDFChatBot:
         # Define a custom function to format the prompt
         def custom_format_fn(data):
             question = data["question"]
-            retrieved_docs = db.retrieve(question)  # Retrieve relevant documents based on the question
-            return self.custom_prompt(question, retrieved_docs)
+            retrieved_idx = db.retrieve(question)  # Retrieve relevant documents based on the question
+            return self.custom_prompt(question, retrieved_idx)
 
         conversational_chain = ConversationalRetrievalChain.from_llm(llm=self.load_llm(),
                                                                      retriever=db.as_retriever(search_kwargs={"k": 3}),
